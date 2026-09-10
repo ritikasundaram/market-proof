@@ -1,36 +1,142 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Market Proof — AI market research with receipts
 
-## Getting Started
+Market Proof helps B2B SaaS marketers research a market and shows **which parts of the
+AI-generated research are trustworthy, weak, or need human review**.
 
-First, run the development server:
+Enter a brief like *"Research the AI recruiting software market for mid-market
+companies"* and get a structured report: category summary, competitor map, buyer pains,
+messaging patterns, positioning opportunities, SEO/AEO topics — plus a **research
+quality score, source notes, weak-claim warnings, and a human review checklist**.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+This is a portfolio project built to learn Next.js, API routes, structured prompting,
+simple agent orchestration, and eval/rubric thinking.
+
+## Why I built it
+
+AI report generators are easy; trusting them is hard. Most tools dump a confident wall
+of text with no provenance. Market Proof separates four things other tools blur:
+
+1. **What the AI found** — the findings, in plain marketer language.
+2. **What is backed by evidence** — source URLs from live web search, per claim.
+3. **What is inference** — labeled as such, with confidence levels.
+4. **What is weak or uncertain** — flagged by a dedicated verifier agent, with a
+   human checklist of what to verify before publishing.
+
+The verification layer is the product, not a footnote.
+
+## How the agent workflow works
+
+One API route receives the brief. A small orchestrator (no framework) runs the agents:
+
+```
+brief → planner → live search (Tavily) → 4 parallel researchers
+      → verifier → rubric scorer → synthesis → report + scores + warnings
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Agent | File | Job |
+|---|---|---|
+| Planner | `lib/agents/planner.ts` | Defines category, likely buyer, tasks, source types |
+| Category | `lib/agents/category.ts` | Explains the market in plain language |
+| Competitor | `lib/agents/competitor.ts` | Maps direct / indirect / status-quo alternatives |
+| Customer pain | `lib/agents/customerPain.ts` | Pains in buyer language + marketing implications |
+| SEO/AEO | `lib/agents/seoAeo.ts` | Keywords, buyer questions, comparisons, FAQs |
+| Verifier | `lib/agents/verifier.ts` | Flags unsupported/weak claims, bad URLs, review checklist |
+| Scorer | `lib/ai/rubric.ts` | Deterministic 1–10 scores per dimension (no LLM cost) |
+| Synthesis | `lib/agents/synthesis.ts` | Writes the final marketer-facing report |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Key design choices:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Search once, share everywhere.** One batched Tavily pass grounds all four
+  researchers. Agents may only cite URLs from that bundle — anything else is
+  flagged. If search fails or no key is set, the whole report is honestly labeled
+  *"model knowledge only, verify before use."*
+- **Structured outputs end-to-end.** Every agent returns Zod-validated JSON via
+  OpenAI strict structured outputs (`zodResponseFormat`). Invalid output retries
+  once, then degrades to a low-confidence fallback — the pipeline always returns a
+  complete, honestly low-scoring report instead of a 500.
+- **Swappable seams.** Agents depend on an `LLMProvider` interface (OpenAI now,
+  Anthropic stub ready) and a `SearchProvider` interface (Tavily now). Replacing
+  the orchestrator with LangGraph later means reimplementing one function:
+  `runResearchPipeline`.
 
-## Learn More
+## The research quality layer
 
-To learn more about Next.js, take a look at the following resources:
+Scores are **interpretive rubric scores (1–10)**, computed deterministically in
+`lib/ai/rubric.ts` — read that file to see exactly why a report scores what it does:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Competitor coverage** — 10 = direct + indirect + status-quo with specifics;
+  1 = vague or irrelevant.
+- **Source quality** — 10 = mostly live, credible URLs; 1 = no live sources.
+- **Buyer pain specificity** — 10 = concrete pains in buyer language
+  ("we spend Fridays reading 200 resumes"); 1 = generic ("increase productivity").
+- **Evidence coverage** — share of claims carrying URLs from the search bundle.
+- **Marketing usefulness** — can a marketer act on this tomorrow?
+- **Overclaiming risk** — low / medium / high, driven by verifier flags and search status.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The UI makes this visible with badges (`Source-backed`, `Inference`, `Weak claim`,
+`Needs review`), a score card, a warnings panel, and a collapsible "how this was
+researched" trace.
 
-## Deploy on Vercel
+## Tech stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
+- OpenAI SDK (`gpt-4o-mini`, strict structured outputs) behind a provider interface
+- Tavily search API (basic depth, ~5 credits/report) behind a provider interface
+- Zod for brief validation + agent output schemas
+- No database, no auth — reports persist in-memory + `sessionStorage` (see
+  `lib/store/research-store.tsx`, shaped for a future Supabase swap)
+- Hosted on Vercel
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Run locally
+
+```bash
+npm install
+cp .env.example .env.local   # add OPENAI_API_KEY; TAVILY_API_KEY optional but recommended
+npm run dev                  # http://localhost:3000
+```
+
+Without `TAVILY_API_KEY` the app still works — reports are labeled model-knowledge-only.
+
+To preview the results UI without spending API credits, import
+`fixtures/sample-response.json` into `sessionStorage` under the
+`market-proof:report:v1` key as `{ "version": 1, "response": <fixture.response> }`
+(e.g. via devtools) and open `/results`.
+
+## Environment variables
+
+| Var | Required | Purpose |
+|---|---|---|
+| `OPENAI_API_KEY` | yes | Powers all agents |
+| `OPENAI_MODEL` | no | Default `gpt-4o-mini` |
+| `LLM_PROVIDER` | no | `openai` (default) or `anthropic` (stub) |
+| `SEARCH_PROVIDER` | no | `tavily` (default) |
+| `TAVILY_API_KEY` | recommended | Live sources; free 1,000 credits/mo |
+| `SEARCH_MAX_RESULTS` | no | Hits per query (default 5) |
+
+## Project structure
+
+```
+app/                  landing page, results dashboard, POST /api/research
+components/           form, loader, score card, tables, badges, export
+lib/agents/           7 researcher/verifier/synthesis prompt + runner modules
+lib/ai/               provider interface, OpenAI impl, orchestrator, rubric, schemas
+lib/search/           provider interface, Tavily impl, query builder
+lib/store/            report store (sessionStorage now, Supabase-ready shape)
+lib/utils/            markdown export builder
+types/                shared contracts (mirrored by Zod schemas)
+fixtures/             sample report for UI development
+```
+
+## Future improvements (not built)
+
+- Supabase saved reports + shareable links (store module is shaped for it)
+- SSE streaming so the loader reflects real agent progress
+- Exa/Firecrawl content extraction for deeper citations
+- Eval fixture set with expected competitors per market
+- Side-by-side model comparison, per-agent cost/time footer, PDF export
+
+## Honest limitations
+
+- Model knowledge + snippets are not primary research; every report says what to verify.
+- Scores guide judgment; they don't measure truth.
+- A 30–60s single-POST pipeline is a deliberate MVP tradeoff over streaming infra.

@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "savedAt": "2026-01-01T00:00:00.000Z",
+  "response": {
+    "brief": {
+      "query": "Research the AI recruiting software market for mid-market companies.",
+      "category": "AI recruiting software",
+      "buyer": "VP Talent Acquisition at 200-2000 person companies",
+      "region": "North America",
+      "goal": "Messaging and positioning for a new entrant",
+      "context": ""
+    },
+    "plan": {
+      "category": "AI recruiting software",
+      "likelyBuyer": "VP Talent Acquisition at 200-2000 person companies",
+      "tasks": [
+        "Summarize the AI recruiting software category",
+        "Map direct, indirect, and status-quo competitors",
+        "Extract buyer pain themes from reviews and discussions",
+        "Draft SEO/AEO content opportunities"
+      ],
+      "usefulSourceTypes": ["vendor pricing pages", "G2/Capterra reviews", "comparison articles"],
+      "reportSections": ["Category", "Competitors", "Pains", "SEO/AEO", "Positioning"]
+    },
+    "category": {
+      "summary": "AI recruiting software helps talent teams source, screen, and schedule candidates faster. Fixture example — replace with a real run.",
+      "problemSolved": "Hiring teams drown in manual resume review and interview scheduling.",
+      "typicalBuyers": ["VP Talent Acquisition (200-2000 employees)", "HR Operations Manager"],
+      "language": ["resume screening", "candidate pipeline", "time-to-hire", "interview scheduling"],
+      "trends": ["AI screening assistants embedded in ATS platforms"],
+      "risks": ["Bias and compliance scrutiny in automated screening"],
+      "confidence": "medium",
+      "sourceNote": "Fixture data for local UI development.",
+      "sourceUrls": []
+    },
+    "competitors": {
+      "competitors": [
+        {
+          "name": "Example ATS Co",
+          "type": "direct",
+          "whatTheyDo": "Applicant tracking with built-in AI resume screening.",
+          "positioning": "Hire faster without growing the recruiting team.",
+          "whyMatters": "Most-mentioned direct alternative in buyer shortlists.",
+          "confidence": "low",
+          "sourceNote": "model knowledge only, verify before use",
+          "sourceUrls": []
+        },
+        {
+          "name": "Spreadsheets + inbox",
+          "type": "status_quo",
+          "whatTheyDo": "Manual tracking of candidates in sheets and email.",
+          "positioning": "Free and familiar.",
+          "whyMatters": "The default for smaller teams; sets the price anchor at $0.",
+          "confidence": "medium",
+          "sourceNote": "model knowledge only, verify before use",
+          "sourceUrls": []
+        }
+      ]
+    },
+    "pains": {
+      "pains": [
+        {
+          "pain": "Manual resume screening",
+          "buyerPhrase": "we spend Fridays reading 200 resumes by hand",
+          "whyItMatters": "Top buying trigger; screening backlog delays every hire.",
+          "evidenceNote": "model knowledge only, verify before use",
+          "marketingImplication": "Lead with hours saved per req, not generic AI claims.",
+          "confidence": "medium",
+          "sourceUrls": []
+        }
+      ]
+    },
+    "seo": {
+      "keywords": ["ai recruiting software", "best ai screening tools mid-market"],
+      "buyerQuestions": ["How much does AI recruiting software cost?", "Does AI screening reduce bias?"],
+      "comparisons": ["Example ATS Co vs Greenhouse", "AI screening vs manual review"],
+      "educationalTopics": ["How AI resume screening works", "Time-to-hire benchmarks by company size"],
+      "faqs": ["What is AI recruiting software?", "Who uses AI recruiting software?"],
+      "aeoQuestions": ["What is AI recruiting software?", "How does AI resume screening work?"],
+      "confidence": "medium",
+      "sourceNote": "Fixture data for local UI development."
+    },
+    "verification": {
+      "unsupportedClaims": [
+        { "claim": "Example ATS Co pricing claim", "reason": "No source provided in fixture." }
+      ],
+      "weakClaims": [],
+      "invalidUrls": [],
+      "sourceQualityNotes": "Fixture run with no live sources; every claim needs verification.",
+      "humanChecklist": [
+        "Verify competitor names and pricing on official vendor sites.",
+        "Confirm pain themes against real customer reviews before using in messaging."
+      ]
+    },
+    "scores": {
+      "overall": 4,
+      "competitorCoverage": 5,
+      "sourceQuality": 2,
+      "buyerPainSpecificity": 6,
+      "evidenceCoverage": 2,
+      "marketingUsefulness": 6,
+      "overclaimRisk": "high"
+    },
+    "final": {
+      "title": "Market Research Report: AI recruiting software (fixture)",
+      "briefSummary": "Mid-market AI recruiting research for positioning a new entrant. Fixture data.",
+      "messagingPatterns": ["Hire faster without growing the team", "AI that removes bias"],
+      "positioningOpportunities": ["Own scheduling pain, not just screening", "Publish bias-audit transparency competitors avoid"],
+      "markdown": "# Market Research Report: AI recruiting software (fixture)\n\nFixture markdown for local UI development."
+    },
+    "meta": {
+      "model": "gpt-4o-mini",
+      "provider": "openai",
+      "searchStatus": "fallback-model-knowledge",
+      "sourcesCount": 0,
+      "durationMs": 1000,
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  }
+}
