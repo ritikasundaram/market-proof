@@ -2,7 +2,7 @@
  * Builds the small set of search queries that ground a report.
  *
  * Pure function (no I/O) so it is easy to unit-test. Kept to at most
- * MAX_QUERIES so one report costs a predictable handful of Tavily credits.
+ * MAX_QUERIES so one report costs a predictable handful of Serper searches.
  */
 import type { ResearchBrief } from "@/types/research";
 

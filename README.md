@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Market Proof — AI market research with receipts
 
 Market Proof helps B2B SaaS marketers research a market and shows **which parts of the
@@ -29,7 +30,7 @@ The verification layer is the product, not a footnote.
 One API route receives the brief. A small orchestrator (no framework) runs the agents:
 
 ```
-brief → planner → live search (Tavily) → 4 parallel researchers
+brief → planner → live search (Serper) → 4 parallel researchers
       → verifier → rubric scorer → synthesis → report + scores + warnings
 ```
 
@@ -46,7 +47,7 @@ brief → planner → live search (Tavily) → 4 parallel researchers
 
 Key design choices:
 
-- **Search once, share everywhere.** One batched Tavily pass grounds all four
+- **Search once, share everywhere.** One batched Serper pass grounds all four
   researchers. Agents may only cite URLs from that bundle — anything else is
   flagged. If search fails or no key is set, the whole report is honestly labeled
   *"model knowledge only, verify before use."*
@@ -55,7 +56,7 @@ Key design choices:
   once, then degrades to a low-confidence fallback — the pipeline always returns a
   complete, honestly low-scoring report instead of a 500.
 - **Swappable seams.** Agents depend on an `LLMProvider` interface (OpenAI now,
-  Anthropic stub ready) and a `SearchProvider` interface (Tavily now). Replacing
+  Anthropic stub ready) and a `SearchProvider` interface (Serper now). Replacing
   the orchestrator with LangGraph later means reimplementing one function:
   `runResearchPipeline`.
 
@@ -81,7 +82,7 @@ researched" trace.
 
 - Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
 - OpenAI SDK (`gpt-4o-mini`, strict structured outputs) behind a provider interface
-- Tavily search API (basic depth, ~5 credits/report) behind a provider interface
+- Serper search API (~5 searches/report, 2,500 free) behind a provider interface
 - Zod for brief validation + agent output schemas
 - No database, no auth — reports persist in-memory + `sessionStorage` (see
   `lib/store/research-store.tsx`, shaped for a future Supabase swap)
@@ -91,11 +92,11 @@ researched" trace.
 
 ```bash
 npm install
-cp .env.example .env.local   # add OPENAI_API_KEY; TAVILY_API_KEY optional but recommended
+cp .env.example .env.local   # add OPENAI_API_KEY; SERPER_API_KEY optional but recommended
 npm run dev                  # http://localhost:3000
 ```
 
-Without `TAVILY_API_KEY` the app still works — reports are labeled model-knowledge-only.
+Without `SERPER_API_KEY` the app still works — reports are labeled model-knowledge-only.
 
 To preview the results UI without spending API credits, import
 `fixtures/sample-response.json` into `sessionStorage` under the
@@ -109,8 +110,8 @@ To preview the results UI without spending API credits, import
 | `OPENAI_API_KEY` | yes | Powers all agents |
 | `OPENAI_MODEL` | no | Default `gpt-4o-mini` |
 | `LLM_PROVIDER` | no | `openai` (default) or `anthropic` (stub) |
-| `SEARCH_PROVIDER` | no | `tavily` (default) |
-| `TAVILY_API_KEY` | recommended | Live sources; free 1,000 credits/mo |
+| `SEARCH_PROVIDER` | no | `serper` (default) |
+| `SERPER_API_KEY` | recommended | Live sources; 2,500 free searches |
 | `SEARCH_MAX_RESULTS` | no | Hits per query (default 5) |
 
 ## Project structure
@@ -120,7 +121,7 @@ app/                  landing page, results dashboard, POST /api/research
 components/           form, loader, score card, tables, badges, export
 lib/agents/           7 researcher/verifier/synthesis prompt + runner modules
 lib/ai/               provider interface, OpenAI impl, orchestrator, rubric, schemas
-lib/search/           provider interface, Tavily impl, query builder
+lib/search/           provider interface, Serper impl, query builder
 lib/store/            report store (sessionStorage now, Supabase-ready shape)
 lib/utils/            markdown export builder
 types/                shared contracts (mirrored by Zod schemas)
@@ -140,3 +141,6 @@ fixtures/             sample report for UI development
 - Model knowledge + snippets are not primary research; every report says what to verify.
 - Scores guide judgment; they don't measure truth.
 - A 30–60s single-POST pipeline is a deliberate MVP tradeoff over streaming infra.
+=======
+# market-proof
+>>>>>>> d10cb6f92583d9488b115cdc23d6d968f4f8e286

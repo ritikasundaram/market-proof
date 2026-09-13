@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Research failed. Check that OPENAI_API_KEY is set (and TAVILY_API_KEY for live sources), then try again.",
+          "Research failed. Check that OPENAI_API_KEY is set (and SERPER_API_KEY for live sources), then try again.",
       },
       { status: 500 },
     );

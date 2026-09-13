@@ -1,0 +1,14 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode/muse-spark-1.3-contributor-free",
+  "agent": {
+    "build": {
+      "model": "opencode/muse-spark-1.3-contributor-free",
+      "variant": "high"
+    },
+    "plan": {
+      "model": "opencode/muse-spark-1.3-contributor-free",
+      "variant": "high"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 /**
  * Search entry point for the orchestrator.
  *
- * - Picks the provider from SEARCH_PROVIDER (only "tavily" is real in MVP).
+ * - Picks the provider from SEARCH_PROVIDER (only "serper" is real in MVP).
  * - Runs all queries in parallel with `Promise.allSettled` so one failure
  *   never sinks the report.
  * - Returns searchStatus "live" if at least one result came back, otherwise
@@ -10,12 +10,12 @@
 import type { SearchBundle } from "@/types/research";
 import { NoopSearchProvider } from "./mock";
 import type { SearchProvider } from "./provider";
-import { TavilySearchProvider } from "./tavily";
+import { SerperSearchProvider } from "./serper";
 
 export function getSearchProvider(): SearchProvider {
-  const configured = (process.env.SEARCH_PROVIDER ?? "tavily").toLowerCase();
-  if (configured === "tavily" && process.env.TAVILY_API_KEY) {
-    return new TavilySearchProvider(process.env.TAVILY_API_KEY);
+  const configured = (process.env.SEARCH_PROVIDER ?? "serper").toLowerCase();
+  if (configured === "serper" && process.env.SERPER_API_KEY) {
+    return new SerperSearchProvider(process.env.SERPER_API_KEY);
   }
   return new NoopSearchProvider();
 }

@@ -41,6 +41,12 @@ export interface SearchResult {
   title: string;
   url: string;
   snippet: string;
+  /** Publisher name when the provider supplies one (e.g. Serper `source`). */
+  source?: string;
+  /** Publication date string when the provider supplies one. */
+  date?: string;
+  /** Result rank within its query when the provider supplies one. */
+  rank?: number;
 }
 
 /** Search context handed to every research agent. */
