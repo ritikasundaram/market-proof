@@ -24,7 +24,7 @@ export function getModelLabel(): string {
   const provider = (process.env.LLM_PROVIDER ?? "gemini").toLowerCase();
   if (provider === "anthropic") return process.env.ANTHROPIC_MODEL ?? "claude (not configured)";
   if (provider === "openai") return process.env.OPENAI_MODEL ?? "gpt-4o-mini";
-  return process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
+  return process.env.GEMINI_MODEL ?? "gemini-3.5-flash-lite";
 }
 
 /**

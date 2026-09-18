@@ -82,7 +82,7 @@ researched" trace.
 ## Tech stack
 
 - Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
-- Gemini (`gemini-3.6-flash`, via Google's OpenAI-compatible endpoint) behind a provider interface
+- Gemini (`gemini-3.5-flash-lite`, via Google's OpenAI-compatible endpoint) behind a provider interface
 - Serper search API (~5 searches/report, 2,500 free) behind a provider interface
 - Zod for brief validation + agent output schemas
 - No database, no auth — reports persist in-memory + `sessionStorage` (see
@@ -109,7 +109,7 @@ To preview the results UI without spending API credits, import
 | Var | Required | Purpose |
 |---|---|---|
 | `GEMINI_API_KEY` | yes | Powers all agents |
-| `GEMINI_MODEL` | no | Default `gemini-3.6-flash` |
+| `GEMINI_MODEL` | no | Default `gemini-3.5-flash-lite` |
 | `LLM_PROVIDER` | no | `gemini` (default), `openai`, or `anthropic` (stub) |
 | `OPENAI_API_KEY` | only for `openai` | Alternative provider key |
 | `OPENAI_MODEL` | no | Default `gpt-4o-mini` |

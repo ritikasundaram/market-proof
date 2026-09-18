@@ -33,7 +33,7 @@ function getClient(): OpenAI {
 }
 
 export function getGeminiModel(): string {
-  return process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
+  return process.env.GEMINI_MODEL ?? "gemini-3.5-flash-lite";
 }
 
 /** Strips markdown fences models sometimes wrap around JSON output. */
