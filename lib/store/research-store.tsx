@@ -22,8 +22,12 @@ const ERROR_KEY = "market-proof:error:v1";
 const PENDING_KEY = "market-proof:pending:v1";
 const EVENT_NAME = "market-proof:report-ready";
 
-/** How long after "Generate" we still consider a request in flight. */
-const PENDING_TTL_MS = 3 * 60 * 1000;
+/**
+ * How long after "Generate" we still consider a request in flight. Generous
+ * on purpose: provider rate-limit backoffs can push a run past 3 minutes,
+ * and the loader should not flip to "No report yet" mid-run.
+ */
+const PENDING_TTL_MS = 5 * 60 * 1000;
 
 interface StoreValue {
   report: FinalResearchResponse | null;
@@ -66,6 +70,10 @@ function writeReport(r: FinalResearchResponse): void {
 function writeError(message: string): void {
   try {
     sessionStorage.setItem(ERROR_KEY, message);
+    // A published error always belongs to the current run — never keep a
+    // stale report around it, or the results page would show the old report
+    // and hide the failure entirely.
+    sessionStorage.removeItem(STORAGE_KEY);
     sessionStorage.removeItem(PENDING_KEY);
   } catch {
     // ignore
@@ -81,10 +89,17 @@ export function readError(): string | null {
   }
 }
 
-/** Called by the research form the moment a request starts. Lets the */
-/** results page tell "still researching" apart from "nothing requested". */
+/**
+ * Called by the research form the moment a request starts. Sets the pending
+ * flag so the results page can tell "still researching" apart from "nothing
+ * requested" — and clears any previous report/error, because a new run
+ * invalidates them. Without the clear, the results page would show the OLD
+ * report during (and after a failed) new run, which reads as "nothing ran".
+ */
 export function markRequestStarted(): void {
   try {
+    sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(ERROR_KEY);
     sessionStorage.setItem(PENDING_KEY, String(Date.now()));
   } catch {
     // ignore

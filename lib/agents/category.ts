@@ -2,7 +2,7 @@
  * Category agent: explains what the market is in plain marketer language.
  */
 import type { CategoryOutput, ResearchBrief, SearchBundle } from "@/types/research";
-import { getProvider, withTimeout } from "../ai/client";
+import { getProvider, recordAgentError, withTimeout } from "../ai/client";
 import { CategorySchema } from "../ai/schemas";
 import { formatSearchContext } from "../search/queries";
 import { briefBlock, GLOBAL_STYLE_RULES } from "./shared";
@@ -45,9 +45,11 @@ Return JSON with: summary (3-5 sentences), problemSolved (1-2 sentences), typica
         schemaName: "category_output",
         schema: CategorySchema,
         maxTokens: 1200,
+        agent: "category",
       }),
     );
-  } catch {
+  } catch (err) {
+    recordAgentError("category", err);
     return CATEGORY_FALLBACK;
   }
 }

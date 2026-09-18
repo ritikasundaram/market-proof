@@ -18,7 +18,7 @@ import type {
   SeoOutput,
   VerificationOutput,
 } from "@/types/research";
-import { getProvider, withTimeout } from "../ai/client";
+import { getProvider, recordAgentError, withTimeout } from "../ai/client";
 import { VerificationSchema } from "../ai/schemas";
 import { briefBlock, GLOBAL_STYLE_RULES } from "./shared";
 
@@ -92,9 +92,11 @@ Return JSON: unsupportedClaims (quote exact claim + reason), weakClaims (claim +
         schemaName: "verification_output",
         schema: VerificationSchema,
         maxTokens: 1500,
+        agent: "verifier",
       }),
     );
-  } catch {
+  } catch (err) {
+    recordAgentError("verifier", err);
     return VERIFIER_FALLBACK;
   }
 }

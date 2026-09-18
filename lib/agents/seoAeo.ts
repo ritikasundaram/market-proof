@@ -5,7 +5,7 @@
  * voice assistants ("what is / who is / how does it work").
  */
 import type { ResearchBrief, SearchBundle, SeoOutput } from "@/types/research";
-import { getProvider, withTimeout } from "../ai/client";
+import { getProvider, recordAgentError, withTimeout } from "../ai/client";
 import { SeoOutputSchema } from "../ai/schemas";
 import { formatSearchContext } from "../search/queries";
 import { briefBlock, GLOBAL_STYLE_RULES } from "./shared";
@@ -47,9 +47,11 @@ Return JSON with: keywords (6-10 specific phrases, include long-tail), buyerQues
         schemaName: "seo_output",
         schema: SeoOutputSchema,
         maxTokens: 1500,
+        agent: "seoAeo",
       }),
     );
-  } catch {
+  } catch (err) {
+    recordAgentError("seoAeo", err);
     return SEO_FALLBACK;
   }
 }

@@ -13,10 +13,11 @@ import { LoadingAgents } from "@/components/LoadingAgents";
 import { ResultsDashboard } from "@/components/ResultsDashboard";
 
 /**
- * Results page states:
- * - report in storage → dashboard
+ * Results page states, in priority order:
+ * - fresh pending flag (form just submitted) → staged loader, even if a
+ *   previous report is somehow still stored (a new run invalidates it)
  * - error in storage → error card with retry link
- * - fresh pending flag (form just submitted) → staged loader
+ * - report in storage → dashboard
  * - otherwise → empty state with a link home
  */
 export default function ResultsPage() {
@@ -38,20 +39,25 @@ export default function ResultsPage() {
     // external system, so syncing it here is a legitimate effect.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
-    const unsub = subscribeToReportEvents(refresh);
-    // Re-check the pending flag in case this tab missed the start event.
-    const timer = setInterval(refresh, 2000);
-    return () => {
-      unsub();
-      clearInterval(timer);
-    };
+    return subscribeToReportEvents(refresh);
   }, [refresh]);
+
+  // Poll only while a run is in flight — the event covers same-tab updates,
+  // and polling after completion would re-parse the stored report (a fresh
+  // object each time) and re-render the dashboard every 2s for nothing.
+  useEffect(() => {
+    if (!waiting || report || error) return;
+    const timer = setInterval(refresh, 2000);
+    return () => clearInterval(timer);
+  }, [waiting, report, error, refresh]);
 
   return (
     <div className="flex flex-1 flex-col items-center bg-zinc-50">
       <main className="w-full max-w-4xl flex-1 px-5 py-8 sm:py-10">
-        {report ? (
-          <ResultsDashboard report={report} />
+        {!hydrated ? null : waiting ? (
+          <div className="space-y-5">
+            <LoadingAgents />
+          </div>
         ) : error ? (
           <div className="rounded-2xl border border-rose-200 bg-white p-6 text-center shadow-sm">
             <h1 className="text-lg font-semibold text-zinc-900">Research failed</h1>
@@ -63,10 +69,8 @@ export default function ResultsPage() {
               Try again
             </Link>
           </div>
-        ) : !hydrated ? null : waiting ? (
-          <div className="space-y-5">
-            <LoadingAgents />
-          </div>
+        ) : report ? (
+          <ResultsDashboard report={report} />
         ) : (
           <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-center shadow-sm">
             <h1 className="text-lg font-semibold text-zinc-900">No report yet</h1>

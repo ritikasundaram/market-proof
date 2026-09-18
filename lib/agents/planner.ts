@@ -5,7 +5,7 @@
  * one definition of the category, buyer, and report scope.
  */
 import type { PlanOutput, ResearchBrief } from "@/types/research";
-import { getProvider, withTimeout } from "../ai/client";
+import { getProvider, recordAgentError, withTimeout } from "../ai/client";
 import { PlanSchema } from "../ai/schemas";
 import { briefBlock, GLOBAL_STYLE_RULES } from "./shared";
 
@@ -45,9 +45,11 @@ Return a plan with:
         schemaName: "research_plan",
         schema: PlanSchema,
         maxTokens: 800,
+        agent: "planner",
       }),
     );
-  } catch {
+  } catch (err) {
+    recordAgentError("planner", err);
     return { ...PLANNER_FALLBACK, category: brief.category || brief.query.slice(0, 80) };
   }
 }

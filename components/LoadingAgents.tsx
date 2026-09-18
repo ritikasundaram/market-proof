@@ -33,7 +33,7 @@ export function LoadingAgents() {
       <div className="mb-4 flex items-center gap-3">
         <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
         <p className="text-sm font-medium text-zinc-800">
-          Researching your market — this takes ~30–60 seconds.
+          Researching your market — this takes ~1–3 minutes.
         </p>
       </div>
       <ol className="space-y-2.5">

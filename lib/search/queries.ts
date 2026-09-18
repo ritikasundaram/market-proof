@@ -40,10 +40,15 @@ export function formatSearchContext(
   if (results.length === 0) {
     return "No live search results are available. You are working from model knowledge only.";
   }
-  return results
-    .map(
-      (r, i) =>
-        `[${i + 1}] ${r.title}\nURL: ${r.url}\nSnippet: ${r.snippet.slice(0, 400)}`,
-    )
-    .join("\n\n");
+  return (
+    "The following are search-result snippets (titles + short excerpts, not full pages). " +
+    "They are enough to identify competitors, pains, and topics — cite them, and mark " +
+    "anything beyond what they support as lower confidence.\n\n" +
+    results
+      .map(
+        (r, i) =>
+          `[${i + 1}] ${r.title}\nURL: ${r.url}\nSnippet: ${r.snippet.slice(0, 400) || "(no snippet returned)"}`,
+      )
+      .join("\n\n")
+  );
 }

@@ -1,9 +1,9 @@
 /**
  * LLM provider interface.
  *
- * Agents depend only on this interface. OpenAI is the MVP implementation;
- * adding Anthropic later means writing one new file that satisfies this
- * contract — no agent code changes.
+ * Agents depend only on this interface. Gemini is the default implementation
+ * (OpenAI also implemented, Anthropic stubbed) — adding another provider
+ * means writing one new file that satisfies this contract, no agent changes.
  */
 import type { z } from "zod";
 
@@ -19,6 +19,11 @@ export interface StructuredCallOpts {
   schema: z.ZodType<any, any, any>;
   /** Safety cap per call; agents keep prompts small. */
   maxTokens?: number;
+  /**
+   * Agent name for diagnostics (e.g. "competitor"). Used in server logs so
+   * a failing agent can be identified without guessing.
+   */
+  agent?: string;
 }
 
 export interface LLMProvider {

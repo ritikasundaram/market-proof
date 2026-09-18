@@ -4,9 +4,9 @@
  * Two jobs:
  * 1. Validate the incoming research brief at the API boundary.
  * 2. Define the exact JSON shape each agent must return. These schemas are
- *    passed to OpenAI structured outputs (`zodResponseFormat`), which
- *    requires every field to be `required` — so agent schemas avoid
- *    `.optional()` entirely. Missing information is represented with empty
+ *    passed to structured-output calls (`zodResponseFormat` for OpenAI,
+ *    JSON mode + local validation for Gemini) — so agent schemas avoid
+ *    `.optional()` entirely (every field is `required`). Missing information is represented with empty
  *    strings/arrays and `confidence: "low"`, never with absent keys.
  */
 import { z } from "zod";

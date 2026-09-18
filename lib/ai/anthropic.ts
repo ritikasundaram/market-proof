@@ -12,7 +12,7 @@ export class AnthropicProvider implements LLMProvider {
 
   async completeStructured<T>(): Promise<T> {
     throw new Error(
-      "Anthropic provider is not implemented yet. Set LLM_PROVIDER=openai.",
+      "Anthropic provider is not implemented yet. Set LLM_PROVIDER=gemini.",
     );
   }
 }

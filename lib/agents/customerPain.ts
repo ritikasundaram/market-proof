@@ -2,7 +2,7 @@
  * Customer pain agent: extracts buyer pains in the buyer's own words.
  */
 import type { PainOutput, ResearchBrief, SearchBundle } from "@/types/research";
-import { getProvider, withTimeout } from "../ai/client";
+import { getProvider, recordAgentError, withTimeout } from "../ai/client";
 import { PainOutputSchema } from "../ai/schemas";
 import { formatSearchContext } from "../search/queries";
 import { briefBlock, GLOBAL_STYLE_RULES } from "./shared";
@@ -39,9 +39,11 @@ Return 4-7 pain themes. For each: pain (short label), buyerPhrase (first-person 
         schemaName: "pain_output",
         schema: PainOutputSchema,
         maxTokens: 1800,
+        agent: "customerPain",
       }),
     );
-  } catch {
+  } catch (err) {
+    recordAgentError("customerPain", err);
     return PAIN_FALLBACK;
   }
 }

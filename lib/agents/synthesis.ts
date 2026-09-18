@@ -16,7 +16,7 @@ import type {
   SynthesisOutput,
   VerificationOutput,
 } from "@/types/research";
-import { getProvider, withTimeout } from "../ai/client";
+import { getProvider, recordAgentError, withTimeout } from "../ai/client";
 import { SynthesisSchema } from "../ai/schemas";
 import { briefBlock, GLOBAL_STYLE_RULES } from "./shared";
 
@@ -31,14 +31,6 @@ Report rules:
 - Never upgrade confidence: if a finding is low-confidence, say so.
 - messagingPatterns: 3-5 phrases competitors commonly repeat.
 - positioningOpportunities: 3-5 concrete angles where a new entrant could sound sharper or different.`;
-
-export const SYNTHESIS_FALLBACK: SynthesisOutput = {
-  title: "Market Research Report",
-  briefSummary: "Synthesis is unavailable for this run; see the section outputs above.",
-  messagingPatterns: [],
-  positioningOpportunities: [],
-  markdown: "# Market Research Report\n\nSynthesis failed for this run. The individual research sections above still contain the agents' findings.",
-};
 
 interface SynthesisInput {
   brief: ResearchBrief;
@@ -96,9 +88,90 @@ Write the full report markdown with sections 1-10 (brief, category, buyer, compe
         schemaName: "synthesis_output",
         schema: SynthesisSchema,
         maxTokens: 3000,
+        agent: "synthesis",
       }),
     );
-  } catch {
-    return SYNTHESIS_FALLBACK;
+  } catch (err) {
+    recordAgentError("synthesis", err);
+    // The LLM write-up failed, but the section outputs may still hold real
+    // findings — assemble them deterministically instead of giving up.
+    return {
+      title: `Market Research Report: ${input.planCategory}`,
+      briefSummary: input.brief.query,
+      messagingPatterns: [],
+      positioningOpportunities: [],
+      markdown: buildPartialMarkdown(input),
+    };
   }
+}
+
+/**
+ * Deterministic fallback report: stitches together whatever the earlier
+ * agents actually found. Sections with no data say so explicitly rather
+ * than inventing content. Used only when the synthesis LLM call fails.
+ */
+function buildPartialMarkdown(input: SynthesisInput): string {
+  const lines: string[] = [
+    `# Market Research Report: ${input.planCategory}`,
+    "",
+    "> Note: the AI write-up step failed for this run, so this is a direct",
+    "> assembly of the agents' findings (not polished prose). Confidence and",
+    "> source notes below still apply — verify before use.",
+    "",
+    "## 1. Research Brief",
+    "",
+    input.brief.query,
+    "",
+    "## 2. Category Summary",
+    "",
+    input.category.summary || "No category summary was produced.",
+    "",
+  ];
+
+  if (input.category.typicalBuyers.length > 0) {
+    lines.push(`Typical buyers: ${input.category.typicalBuyers.join("; ")}`, "");
+  }
+
+  lines.push("## 3. Competitor Map", "");
+  if (input.competitors.competitors.length === 0) {
+    lines.push("No competitors were found for this run.", "");
+  } else {
+    for (const c of input.competitors.competitors) {
+      lines.push(`- **${c.name}** (${c.type}, ${c.confidence} confidence): ${c.whatTheyDo}`);
+    }
+    lines.push("");
+  }
+
+  lines.push("## 4. Buyer Pain Themes", "");
+  if (input.pains.pains.length === 0) {
+    lines.push("No pain themes were found for this run.", "");
+  } else {
+    for (const p of input.pains.pains) {
+      lines.push(`- **${p.pain}** (${p.confidence} confidence): "${p.buyerPhrase}" — ${p.marketingImplication}`);
+    }
+    lines.push("");
+  }
+
+  lines.push("## 5. SEO/AEO Opportunities", "");
+  const seoBits = [...input.seo.keywords, ...input.seo.comparisons, ...input.seo.faqs];
+  lines.push(seoBits.length > 0 ? seoBits.map((t) => `- ${t}`).join("\n") : "No SEO topics were found for this run.", "");
+
+  lines.push("## 6. Human Review Warnings", "");
+  const flags = [...input.verification.unsupportedClaims, ...input.verification.weakClaims];
+  lines.push(
+    flags.length > 0
+      ? flags.map((f) => `- ${f.claim} — ${f.reason}`).join("\n")
+      : "The verifier did not flag specific claims, but every finding above should still be spot-checked.",
+    "",
+  );
+  if (input.verification.humanChecklist.length > 0) {
+    lines.push("Checklist:", ...input.verification.humanChecklist.map((c) => `- [ ] ${c}`), "");
+  }
+
+  const sources =
+    input.search.results.map((r) => `- ${r.title} — ${r.url}`).join("\n") ||
+    "(no live sources; model knowledge only)";
+  lines.push("## Sources", "", sources, "");
+
+  return lines.join("\n");
 }

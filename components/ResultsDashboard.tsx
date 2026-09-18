@@ -24,8 +24,8 @@ function BulletList({ items }: { items: string[] }) {
 
 export function ResultsDashboard({ report }: { report: FinalResearchResponse }) {
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div id="dashboard-print-area" className="space-y-5">
+      <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <Link href="/" className="text-sm font-medium text-zinc-500 hover:text-zinc-900">
           ← New research
         </Link>

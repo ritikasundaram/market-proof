@@ -132,7 +132,7 @@ export function ResearchForm() {
         {loading ? "Researching…" : "Generate market research"}
       </button>
       <p className="text-center text-xs text-zinc-400">
-        Takes ~30–60 seconds. Reports are grounded with live web sources when available.
+        Takes ~1–3 minutes. Reports are grounded with live web sources when available.
       </p>
     </form>
   );

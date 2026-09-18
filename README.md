@@ -51,12 +51,13 @@ Key design choices:
   researchers. Agents may only cite URLs from that bundle — anything else is
   flagged. If search fails or no key is set, the whole report is honestly labeled
   *"model knowledge only, verify before use."*
-- **Structured outputs end-to-end.** Every agent returns Zod-validated JSON via
-  OpenAI strict structured outputs (`zodResponseFormat`). Invalid output retries
-  once, then degrades to a low-confidence fallback — the pipeline always returns a
-  complete, honestly low-scoring report instead of a 500.
-- **Swappable seams.** Agents depend on an `LLMProvider` interface (OpenAI now,
-  Anthropic stub ready) and a `SearchProvider` interface (Serper now). Replacing
+- **Structured outputs end-to-end.** Every agent returns Zod-validated JSON
+  (OpenAI uses strict structured outputs; Gemini uses JSON mode plus local
+  Zod validation). Invalid output degrades to a low-confidence fallback —
+  the pipeline returns a complete, honestly low-scoring report instead of
+  crashing on one bad agent, and fails loudly only if all agents fail.
+- **Swappable seams.** Agents depend on an `LLMProvider` interface (Gemini now,
+  OpenAI implemented, Anthropic stub ready) and a `SearchProvider` interface (Serper now). Replacing
   the orchestrator with LangGraph later means reimplementing one function:
   `runResearchPipeline`.
 
@@ -81,7 +82,7 @@ researched" trace.
 ## Tech stack
 
 - Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
-- OpenAI SDK (`gpt-4o-mini`, strict structured outputs) behind a provider interface
+- Gemini (`gemini-3.6-flash`, via Google's OpenAI-compatible endpoint) behind a provider interface
 - Serper search API (~5 searches/report, 2,500 free) behind a provider interface
 - Zod for brief validation + agent output schemas
 - No database, no auth — reports persist in-memory + `sessionStorage` (see
@@ -92,7 +93,7 @@ researched" trace.
 
 ```bash
 npm install
-cp .env.example .env.local   # add OPENAI_API_KEY; SERPER_API_KEY optional but recommended
+cp .env.example .env.local   # add GEMINI_API_KEY; SERPER_API_KEY optional but recommended
 npm run dev                  # http://localhost:3000
 ```
 
@@ -107,9 +108,11 @@ To preview the results UI without spending API credits, import
 
 | Var | Required | Purpose |
 |---|---|---|
-| `OPENAI_API_KEY` | yes | Powers all agents |
+| `GEMINI_API_KEY` | yes | Powers all agents |
+| `GEMINI_MODEL` | no | Default `gemini-3.6-flash` |
+| `LLM_PROVIDER` | no | `gemini` (default), `openai`, or `anthropic` (stub) |
+| `OPENAI_API_KEY` | only for `openai` | Alternative provider key |
 | `OPENAI_MODEL` | no | Default `gpt-4o-mini` |
-| `LLM_PROVIDER` | no | `openai` (default) or `anthropic` (stub) |
 | `SEARCH_PROVIDER` | no | `serper` (default) |
 | `SERPER_API_KEY` | recommended | Live sources; 2,500 free searches |
 | `SEARCH_MAX_RESULTS` | no | Hits per query (default 5) |
@@ -120,7 +123,7 @@ To preview the results UI without spending API credits, import
 app/                  landing page, results dashboard, POST /api/research
 components/           form, loader, score card, tables, badges, export
 lib/agents/           7 researcher/verifier/synthesis prompt + runner modules
-lib/ai/               provider interface, OpenAI impl, orchestrator, rubric, schemas
+lib/ai/               provider interface, Gemini + OpenAI impls, orchestrator, rubric, schemas
 lib/search/           provider interface, Serper impl, query builder
 lib/store/            report store (sessionStorage now, Supabase-ready shape)
 lib/utils/            markdown export builder

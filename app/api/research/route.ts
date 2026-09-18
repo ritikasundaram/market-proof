@@ -40,12 +40,12 @@ export async function POST(request: Request) {
     return NextResponse.json(report);
   } catch (err) {
     console.error("Research pipeline failed:", err);
-    return NextResponse.json(
-      {
-        error:
-          "Research failed. Check that OPENAI_API_KEY is set (and SERPER_API_KEY for live sources), then try again.",
-      },
-      { status: 500 },
-    );
+    // Surface the orchestrator's message when it has one (e.g. total agent
+    // failure hints about API key / model / quota) instead of a generic note.
+    const message =
+      err instanceof Error && err.message
+        ? err.message
+        : "Research failed. Check that the LLM API key is set (and SERPER_API_KEY for live sources), then try again.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

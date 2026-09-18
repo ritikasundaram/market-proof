@@ -5,7 +5,7 @@
  * URLs from the search context, and mark anything else low-confidence.
  */
 import type { CompetitorOutput, ResearchBrief, SearchBundle } from "@/types/research";
-import { getProvider, withTimeout } from "../ai/client";
+import { getProvider, recordAgentError, withTimeout } from "../ai/client";
 import { CompetitorOutputSchema } from "../ai/schemas";
 import { formatSearchContext } from "../search/queries";
 import { briefBlock, GLOBAL_STYLE_RULES } from "./shared";
@@ -45,9 +45,11 @@ Return 5-9 competitors covering all three types (at least one status_quo). For e
         schemaName: "competitor_output",
         schema: CompetitorOutputSchema,
         maxTokens: 1800,
+        agent: "competitor",
       }),
     );
-  } catch {
+  } catch (err) {
+    recordAgentError("competitor", err);
     return COMPETITOR_FALLBACK;
   }
 }
